@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>imagefinder</title>
+	<meta content="width=device-width, initial-scale=1" name="viewport">
+	<link href="css\style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+	<div class="hero">
+		<div data-collapse="medium" data-animation="default" data-duration="400" data-easing="ease" data-easing2="ease"
+			role="banner" class="nav w-nav">
+			<div class="container w-container">
+				<a href="#" class="logo w-nav-brand">
+					<img src="img\Logo.svg" width="173" alt="" class="image">
+				</a>
+			</div>
+		</div>
+		<div class="heading-wrapper w-container">
+			<h1 class="main-heading">Find all images in a domain</h1>
+			<div class="w-form">
+				<form id="wf-form-" name="wf-form-" data-name="" method="post">
+					<div class="form_grid">
+						<input type="text" class="text-field w-input" maxlength="256" name="searchbar"
+							data-name="searchbar" placeholder="www.example.com/url"
+							data-w-id="95015ed2-935b-6fb6-d299-57b5e6857f5e" id="searchbar">
+						<button type="submit" value="Submit" data-wait="Please wait..." class="w-button">Submit
+
+						</button>
+
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="section wf-section">
+		<div class="w-container">
+			<h3 class="section-title">RESULTS</h3>
+			<div class="grid-2">
+				<div id="loadingGif" style="display:none"><img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif"></div>
+
+			</div>
+		</div>
+	</div>
+
+	<script>
+
+	
+		var resultList = document.querySelector('.grid-2');
+		var urlInput = document.querySelector('.w-input');
+
+		apiCallBack = function (xhr, callback) {
+			if (xhr.readyState == XMLHttpRequest.DONE) {
+				if (xhr.status != 200) {
+					let message = xhr.status + ":" + xhr.statusText + ":"
+						+ xhr.responseText;
+					alert(message);
+					throw 'API call returned bad code: ' + xhr.status;
+				}
+				let response = xhr.responseText ? JSON.parse(xhr.responseText)
+					: null;
+				if (callback) {
+					callback(response);
+				}
+			}
+		}
+
+		updateList = function (response) {
+			resultList.innerHTML = '';
+			for (var i = 0; i < response.length; i++) {
+				var class_name = "noface";
+
+				var img = document.createElement("div");
+				if (response[i][1] == "true")
+					class_name = "face"
+				img.innerHTML = "<img src ='" + response[i][0] + "'/>"
+				img.src = response[i];
+				img.width = 200;
+				img.className = class_name;
+				console.log(response[i][0], response[i][1], response[i][1].constructor);
+				resultList.appendChild(img);
+			}
+		}
+
+		makeApiCall = function (url, method, obj, callback) {
+			let xhr = new XMLHttpRequest();
+			xhr.open(method, url);
+			xhr.onreadystatechange = apiCallBack.bind(null, xhr, callback);
+			xhr.send(obj ? obj instanceof FormData || obj.constructor == String ? obj : JSON.stringify(obj) : null);
+		}
+
+		document.querySelector(".w-button").addEventListener("click", function (event) {
+			event.preventDefault();
+			document.getElementById('loadingGif').style.display = "block";
+			makeApiCall('/main?url=' + urlInput.value, 'POST', null, updateList);
+			document.getElementById('loadingGif').style.display = "none";
+
+		});
+	</script>
+</body>
+
+</html>
